@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xome.Cascase2.AssetService.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xome.Cascase2.AssetService.WebApi", "Xome.Cascase2.AssetService.WebApi\Xome.Cascase2.AssetService.WebApi.csproj", "{3E271303-DF6B-40A7-8764-0D94CD7379CF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xome.Cascase2.AccountService.UnitTests", "Xome.Cascase2.AssetService.UnitTests\Xome.Cascase2.AccountService.UnitTests.csproj", "{BAE9F57C-F472-459D-9FC7-789A9FD64B95}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xome.Cascase2.AssetService.UnitTests", "Xome.Cascase2.AssetService.UnitTests\Xome.Cascase2.AssetService.UnitTests.csproj", "{BAE9F57C-F472-459D-9FC7-789A9FD64B95}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
