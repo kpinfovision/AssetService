@@ -1,0 +1,6 @@
+@Xome.Cascase2.AssetService.WebApi_HostAddress = http://localhost:5031
+
+GET {{Xome.Cascase2.AssetService.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
