@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using Xome.Cascase2.AssetService.Application.Services;
 using Xome.Cascase2.AssetService.Domain.Entities;
 
@@ -26,10 +27,9 @@ namespace Xome.Cascase2.AssetService.WebApi.Controllers
         }
 
         [HttpPost]
-        public async Task<Asset> AddAsset(Asset asset)
+        public async Task<AssetUploadResponse> AddAsset(Asset asset)
         {
-            await _assetService.AddAsset(asset);
-            return asset;
+            return await _assetService.AddAsset(asset);
         }
 
         [HttpPut]

@@ -7,6 +7,7 @@ using Xome.Cascase2.AssetService.Infrastructure.Data;
 using Xome.Cascase2.AssetService.WebApi.Config;
 using Xome.Cascase2.AssetService.WebApi.Middlewares;
 using Azure.Messaging.ServiceBus;
+using System.Runtime;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,8 @@ builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 builder.Host.ConfigureContainer<ContainerBuilder>(builder => builder.RegisterModule(new AutofacModule()));
 builder.Services.Configure<ServiceBusSettings>(
     builder.Configuration.GetSection("AzureServiceBus"));
+
+builder.Services.Configure<ExternalServiceSettings>(builder.Configuration.GetSection("ExternalServiceSettings"));
 
 builder.Services.AddScoped<AssetsService>();
 builder.Services.AddScoped<ServiceBusPublisher>();

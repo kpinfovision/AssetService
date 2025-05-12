@@ -1,6 +1,15 @@
 ﻿using Xome.Cascase2.AssetService.Domain.Entities;
 using Xome.Cascase2.AssetService.Domain.Interfaces;
 using Microsoft.Extensions.Options;
+using Azure.Messaging.ServiceBus;
+using JsonSerializer = System.Text.Json.JsonSerializer;
+using System.Runtime;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
+using Azure;
+using System.Text;
+
 
 namespace Xome.Cascase2.AssetService.Application.Services
 {
@@ -9,19 +18,53 @@ namespace Xome.Cascase2.AssetService.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly string _connectionString;
         private readonly ServiceBusPublisher _publisher;
+        private readonly ExternalServiceSettings _settings;
 
         // , IUserService userService
-        public AssetsService(IUnitOfWork unitOfWork, ServiceBusPublisher publisher)
+        public AssetsService(IUnitOfWork unitOfWork, ServiceBusPublisher publisher, IOptions<ExternalServiceSettings> options)
         {
             _unitOfWork = unitOfWork;
             _publisher = publisher;
+            _settings = options.Value;
         }
 
-        public async Task AddAsset(Asset asset)
+        public async Task<AssetUploadResponse> AddAsset(Asset asset)
         {
+            AssetUploadResponse assetUploadResponse = new AssetUploadResponse();
+            // todo: need to connect to DB
+            await _unitOfWork.Assets.AddAsset(asset); 
+            int result = await _unitOfWork.SaveChangesAsync();
+            if (result > 0)
+            {
+                switch (asset.AssetType)
+                {
+                    case "FCLT":
+                        // start workflow instance
+                        CamundaProcess camundaProcessData = await StartFCLTWorkflow(asset);
+                        if (camundaProcessData.processInstanceKey.Length > 0)
+                        {
+                            List<CamundaTask> camundaTaskList = new List<CamundaTask>();
+                            // get active camunda task list
+                            while (!camundaTaskList.Any())
+                            {
+                                camundaTaskList= await getCamundaTaskList(camundaProcessData.processInstanceKey);
+                            }
+                            
+                            assetUploadResponse.assetId = asset.AssetId;
+                            assetUploadResponse.processDefinitionId = camundaProcessData.processDefinitionId;
+                            assetUploadResponse.processDefinitionKey = camundaProcessData.processDefinitionKey;
+                            assetUploadResponse.processInstanceKey = camundaProcessData.processInstanceKey;
+                            assetUploadResponse.workFlowTasks = camundaTaskList;
+                            Console.WriteLine(assetUploadResponse);
+                        }
+                        break;
 
-            await _unitOfWork.Assets.AddAsset(asset);
-            await _unitOfWork.SaveChangesAsync();
+                    default:
+                        break;
+                }
+            }
+
+            return assetUploadResponse;
         }
 
         public async Task DeleteAsset(int id)
@@ -115,7 +158,7 @@ namespace Xome.Cascase2.AssetService.Application.Services
                                          }}";
                     break;
             }
-                
+
             await _publisher.SendMessageAsync(messageBody);
         }
 
@@ -132,5 +175,52 @@ namespace Xome.Cascase2.AssetService.Application.Services
 
             await _publisher.SendMessageAsync(messageBody);
         }
+
+        #region Private Methods
+        public async Task<CamundaProcess> StartFCLTWorkflow(Asset asset)
+        {
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+            };
+
+            // processDefinitionId = "AssetOnboardingBPM",              
+            HttpClient _httpClient = new HttpClient(handler);
+            var requestBody = new
+            {
+                auctionFlag = asset.AuctionFlag,
+                assignee = asset.SellerCode.ToLower() == "pennymac" ? "Asset Manager" : "Auction Manager",
+                productType = asset.AssetType,
+                saleDate = asset.SaleDate,
+                assetState = asset.State,
+                assetId = asset.AssetId,
+                user = "sujata.telang@infovision.com",
+            };
+            var url = $"{_settings.CamundaServiceBaseUrl}/api/Camunda/FCLTStartProcess";
+
+            var response = await _httpClient.PostAsJsonAsync(url, requestBody);
+
+            response.EnsureSuccessStatusCode(); // throws if not 2xx
+
+            return await response.Content.ReadFromJsonAsync<CamundaProcess>();
+        }
+
+        public async Task<List<CamundaTask>> getCamundaTaskList(string processInstanceKey)
+        {
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+            };
+            HttpClient _httpClient = new HttpClient(handler);
+
+            var requestBody = new { };
+            var url = $"{_settings.CamundaServiceBaseUrl}/api/Camunda/GetProcessInstanceTasks?processInstanceKey={processInstanceKey}";
+            var response = await _httpClient.PostAsJsonAsync(url, requestBody);
+
+            response.EnsureSuccessStatusCode(); // throws if not 2xx
+
+            return await response.Content.ReadFromJsonAsync<List<CamundaTask>>();
+        }
+        #endregion
     }
 }
