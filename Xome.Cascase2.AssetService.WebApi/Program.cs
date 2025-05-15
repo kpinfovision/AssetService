@@ -16,7 +16,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Add DB Context
 // builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase("InMemoryDb"));
+//builder.Services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase("InMemoryDb"));
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
 
 // configure dependencies using autofac
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());

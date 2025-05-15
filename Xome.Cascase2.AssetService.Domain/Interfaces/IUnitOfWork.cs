@@ -4,7 +4,7 @@ namespace Xome.Cascase2.AssetService.Domain.Interfaces
 {
     public interface IUnitOfWork : IDisposable
     {
-        IAssetRepository Assets { get; }       
+        IAssetRepository ASSET { get; }       
         Task<int> SaveChangesAsync();
     }
 }

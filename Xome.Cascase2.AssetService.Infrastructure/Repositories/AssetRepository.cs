@@ -15,41 +15,41 @@ namespace Xome.Cascase2.AssetService.Infrastructure.Repositories
 
         public async Task AddAsset(Asset asset)
         {
-            await _context.Assets.AddAsync(asset);
+            await _context.ASSET.AddAsync(asset);
         }
 
         public async Task DeleteAsset(int id)
         {
-            var asset = await _context.Assets.FindAsync(id);
+            var asset = await _context.ASSET.FindAsync(id);
             if (asset != null)
             {
-                _context.Assets.Remove(asset);
+                _context.ASSET.Remove(asset);
             }
         }
 
         public async Task<IEnumerable<Asset>> GetAllAssets()
         {
-            return await _context.Assets.ToArrayAsync();
+            return await _context.ASSET.ToArrayAsync();
         }
 
         public async Task<Asset> GetAssetById(string assetId)
         {
-            var asset = _context.Assets.FirstOrDefault(a => a.AssetId == assetId) ?? new Asset();
+            var asset = _context.ASSET.FirstOrDefault(a => a.ASSET_ID.ToString() == assetId) ?? new Asset();
             return asset;
         }
 
         public async Task UpdateAsset(Asset asset)
         {
-            _context.Assets.Update(asset);
+            _context.ASSET.Update(asset);
         }
 
         public async Task UpdateAssetStatus(string assetId, string assetStatus)
         {
-            var asset =  _context.Assets.FirstOrDefault(a=> a.AssetId == assetId)??new Asset();
+            var asset =  _context.ASSET.FirstOrDefault(a=> a.ASSET_ID.ToString() == assetId)??new Asset();
             if (asset != null)
             {
-                asset.AssetStatus = assetStatus;
-                _context.Assets.Update(asset);
+                //asset.AssetStatus = assetStatus;
+                //_context.ASSET.Update(asset);
             }
         }
     }

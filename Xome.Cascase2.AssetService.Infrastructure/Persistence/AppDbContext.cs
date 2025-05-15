@@ -8,12 +8,13 @@ namespace Xome.Cascase2.AssetService.Infrastructure.Data
     {
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-        public DbSet<Asset> Assets { get; set; }              
+        public DbSet<Asset> ASSET { get; set; }              
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);            
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Asset>().HasNoKey();
 
             //modelBuilder.Entity<ManualTask>().HasData(
             //    new ManualTask { Id = 1, TaskId = 1, TaskName = "MarketingRequestTask" },

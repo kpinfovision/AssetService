@@ -6,14 +6,14 @@ namespace Xome.Cascase2.AssetService.Infrastructure.UnitOfWork
     public class UnitOfWork : IUnitOfWork
     {
         private readonly AppDbContext _context;
-        public IAssetRepository Assets { get; }        
+        public IAssetRepository ASSET { get; }        
         public UnitOfWork(
             AppDbContext context,
             IAssetRepository assetRepository            
             )
         {
             _context = context;
-            Assets = assetRepository;
+            ASSET = assetRepository;
         }
         public void Dispose()
         {
